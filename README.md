@@ -1,7 +1,8 @@
 **@collapsed-tools/copykitten**
+
 Easy image and video file management for moving files from cameras to centralized storage.
 
-# **SOFTWARE IS IN PRE-ALPHA STATE, NOT YET READY TO USE**
+## **SOFTWARE IS IN PRE-ALPHA STATE, NOT YET READY TO USE**
 
 ## Features
 
