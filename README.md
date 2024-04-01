@@ -15,7 +15,7 @@ Easy image and video file management for moving files from cameras to centralize
 
 **Installation**
 
-```
+```bash
 npm install @collapsed-tools/copykitten
 ```
 
@@ -23,27 +23,27 @@ npm install @collapsed-tools/copykitten
 
 Here's a basic example with the command-line interface (yep, for now you need to add `--` after `npm run cli` to pass parameters down to script, will be fixed):
 
-```
+```bash
 npm run cli -- \
-   --source /path/to/your/camera/folder \
-   --destination /path/to/your/storage \
-   --transfer-strategy move \
-   --conflict-strategy overwrite 
+   --source /path/to/camera \
+   --destination /path/to/storage \
+   --transfer-strategy (optional) move | copy \
+   --conflict-strategy (optional) overwrite | keepboth | skip | fail 
 ```
 
 **Explanation of Options**
 
 * `--source`: The path to the source folder containing the files you want to transfer.
 * `--destination`: The path to the folder where you want to transfer the files.
-* `--transfer-strategy`: Specifies whether to move (`move`) or copy (`copy`) files.
-* `--conflict-strategy`: Determines how to handle conflicts when files with the same name exist in the destination. Possible values are: `overwrite`, `keepboth`, `skip`.
+* `--transfer-strategy`: Default is `move` strategy, but for some custom approaches `copy` are aviable.
+* `--conflict-strategy`: Determines how to handle conflicts when files with the same name exist in the destination. Possible values are: `overwrite`, `keepboth`, `skip`, `fail`.
 
 **Integrating into Your Workflow**
 
 You can easily incorporate `copykitten` into your scripts or larger applications. Here's an example of how to use it within your Node.js code:
 
 ```javascript
-const { transferer } = require('@collapsed-tools/copykitten');
+import { transferer } from '@collapsed-tools/copykitten';
 const sourcePath = '/path/to/images';
 const destinationPath = '/path/to/storage';
 
@@ -51,7 +51,7 @@ await transferer.transferFiles(sourcePath, destinationPath);
 ```
 
 ```javascript
-const { transferer, TransferStrategyEnum, ConflictResoleStrategyEnum } = require('@collapsed-tools/copykitten');
+import { transferer, TransferStrategyEnum, ConflictResoleStrategyEnum } from '@collapsed-tools/copykitten';
 const sourcePath = '/path/to/images';
 const destinationPath = '/path/to/storage';
 
