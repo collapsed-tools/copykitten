@@ -3,8 +3,9 @@ import path from 'path';
 import { printPriorStats, printProgressStats, printFinalStats } from './print.js'
 
 class File {
-  constructor(relativePath) {
-    this.relativePath = relativePath;
+  constructor(originalRelativePath, newRelativePath = null) {
+    this.newRelativePath = newRelativePath || originalRelativePath;
+    this.originalRelativePath = originalRelativePath;
   }
 }
 
@@ -54,9 +55,9 @@ export class Transferer {
     return files;
   }
 
-  async transferFile(cardfile, storageFile, cardFolderPath, storageFolderPath, strategy) {
-    const originalfilePath = path.join(cardFolderPath, cardfile.relativePath);
-    const newFilePath = path.join(storageFolderPath, storageFile.relativePath);
+  async transferFile(file, cardFolderPath, storageFolderPath, strategy) {
+    const originalfilePath = path.join(cardFolderPath, file.originalRelativePath);
+    const newFilePath = path.join(storageFolderPath, file.newRelativePath);
 
     const { dir, name, ext } = path.parse(newFilePath);
     const tempFilePath = path.format({ dir, name: name + '.tmp', ext });
@@ -88,7 +89,7 @@ export class Transferer {
     const conflictFiles = [];
 
     for (const storageFile of storageFiles) {
-      const cardFile = cardFiles.find(cardFile => cardFile.relativePath === storageFile.relativePath);
+      const cardFile = cardFiles.find(cardFile => cardFile.originalRelativePath === storageFile.originalRelativePath);
       if (cardFile) {
         conflictFiles.push(cardFile);
       } else {
@@ -97,7 +98,7 @@ export class Transferer {
     }
 
     for (const cardFile of cardFiles) {
-      const conflictFile = conflictFiles.find(conflictFile => conflictFile.relativePath === cardFile.relativePath);
+      const conflictFile = conflictFiles.find(conflictFile => conflictFile.originalRelativePath === cardFile.originalRelativePath);
       if (!conflictFile) {
         untransferredFiles.push(cardFile);
       }
@@ -107,50 +108,49 @@ export class Transferer {
   }
 
   reslolveConflictFiles(conflictFiles, conflictResoleStrategy) {
-    const resolvedFilePairs = [];
+    const resolvedFiles = [];
     for (const conflictFile of conflictFiles) {
       switch (conflictResoleStrategy) {
         case ConflictResoleStrategyEnum.FAIL:
-          throw new Error(`Conflict detected: ${conflictFile.relativePath}`);
+          throw new Error(`Conflict detected: ${conflictFile.originalRelativePath}`);
         case ConflictResoleStrategyEnum.KEEPBOTH:
-          const { dir, name, ext } = path.parse(conflictFile.relativePath);
-          const newFilePath = path.format({ dir, name: name + '.new', ext });
-          const newFile = new File(newFilePath);
-          resolvedFilePairs.push([conflictFile, newFile]);
+          const { dir, name, ext } = path.parse(conflictFile.originalRelativePath);
+          const newRelativePath = path.format({ dir, name: name + '.new', ext });
+          conflictFile.newRelativePath = newRelativePath; 
+          resolvedFiles.push(conflictFile);
           break;
         case ConflictResoleStrategyEnum.SKIP:
           break;
         case ConflictResoleStrategyEnum.OVERWRITE:
-          resolvedFilePairs.push([conflictFile, conflictFile]);
+          resolvedFiles.push(conflictFile);
           break;
         default:
           throw new Error(`Invalid conflict resolve strategy: ${conflictResoleStrategy}`);
       }
     }
-    return resolvedFilePairs;
+    return resolvedFiles;
   }
 
   async getFilesToTransferWithoutConflict(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy) {
     const cardFiles = await this.getFiles(cardFolderPath);
     const storageFiles = await this.getFiles(storageFolderPath);
     const { untransferredFiles: wasUntransferredFiles, transferredFiles: wasTransferredFiles, conflictFiles: wasConflictFiles } = this.getFilesToTransfer(cardFiles, storageFiles);
-    const wasUntransferredFilePairs = wasUntransferredFiles.map(file => [file, file]);
-    const resolvedConflictFilePairs = this.reslolveConflictFiles(wasConflictFiles, conflictResoleStrategy);
-    const nowTransferringFilePairs = wasUntransferredFilePairs.concat(resolvedConflictFilePairs);
-    printPriorStats(wasUntransferredFiles, wasTransferredFiles, wasConflictFiles, resolvedConflictFilePairs, nowTransferringFilePairs, transferStrategy, conflictResoleStrategy);
-    return nowTransferringFilePairs;
+    const resolvedConflictFiles = this.reslolveConflictFiles(wasConflictFiles, conflictResoleStrategy);
+    const nowTransferringFiles = wasUntransferredFiles.concat(resolvedConflictFiles);
+    printPriorStats(wasUntransferredFiles, wasTransferredFiles, wasConflictFiles, resolvedConflictFiles, nowTransferringFiles, transferStrategy, conflictResoleStrategy);
+    return nowTransferringFiles;
   }
 
   async transferFiles(cardFolderPath, storageFolderPath, transferStrategy = TransferStrategyEnum.MOVE, conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE) {
-    const nowTransferringFilePairs = await this.getFilesToTransferWithoutConflict(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy);
-    this.resetStat(nowTransferringFilePairs.length);
+    const nowTransferringFiles = await this.getFilesToTransferWithoutConflict(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy);
+    this.resetStat(nowTransferringFiles.length);
     const nowTransferredFiles = [];
-    for (const [nowTransferringCardFile, nowTransferringStorageFile] of nowTransferringFilePairs) {
-      await this.transferFile(nowTransferringCardFile, nowTransferringStorageFile, cardFolderPath, storageFolderPath, transferStrategy);
-      nowTransferredFiles.push(nowTransferringStorageFile);
-      printProgressStats(nowTransferringFilePairs, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
+    for (const nowTransferringFile of nowTransferringFiles) {
+      await this.transferFile(nowTransferringFile, cardFolderPath, storageFolderPath, transferStrategy);
+      nowTransferredFiles.push(nowTransferringFile);
+      printProgressStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
       this.updateStat();
     }
-    printFinalStats(nowTransferringFilePairs, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
+    printFinalStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
   }
 }
