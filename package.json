@@ -4,8 +4,11 @@
   "description": "easy movement images and video files from cameras to storage",
   "type": "module",
   "main": "src/index.js",
+  "bin": "src/cli.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "cli": "node src/cli.js",
+    "start": "npm run cli --"
   },
   "author": "Konstantin Barkalov",
   "license": "ISC",
