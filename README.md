@@ -1,8 +1,7 @@
 **@collapsed-tools/copykitten**
+Easy image and video file management for moving files from cameras to centralized storage.
 
-**ATTENTION: SOFTWARE IS IN PRE-ALPHA STATE, NOT YET READY TO USE**
-
-> Easy image and video file management for moving files from cameras to centralized storage.
+# **SOFTWARE IS IN PRE-ALPHA STATE, NOT YET READY TO USE**
 
 ## Features
 
@@ -23,13 +22,11 @@
 npm install @collapsed-tools/copykitten
 ```
 
-## Usage
-
-As simple as:
+## Basic usage
 
 #### CLI
 ```bash
-cli transfer -s /path/to/camera -d /path/to/storage \
+cli transfer -s /path/to/camera -d /path/to/storage
 ```
 
 #### Javascript
@@ -38,7 +35,7 @@ import { transferer } from '@collapsed-tools/copykitten';
 await transferer.transferFiles('/path/to/images', '/path/to/storage');
 ```
 
-With parameters:
+## With parameters
 
 #### CLI
 ```bash
