@@ -4,8 +4,7 @@
 
 > Easy image and video file management for moving files from cameras to centralized storage.
 
-
-### Features
+## Features
 
 * **Reliable Transfers:**  Moves or copies files between camera storage (e.g., SD cards) and your designated storage locations.
 * **Flexible Conflict Resolution:** Handles file conflicts with various strategies:
@@ -18,12 +17,13 @@
 * **TODO: Handles Camera Disconnects:** Transfers continue seamlessly if the camera is disconnected and reconnected.
 * **TODO: Media subfolder whitelist:** Automatically detect media-related subfolders, like 'DCIM', 'CLIP', 'CameraNN', etc.
 
-### Installation
+## Installation
 
 ```bash
 npm install @collapsed-tools/copykitten
 ```
-### Usage
+
+## Usage
 
 As simple as:
 
@@ -60,15 +60,15 @@ await transferer.transferFiles(
 );
 ```
 
-**Explanation of strategies**
+## Explanation of strategies
 
 * **Transfer**: Default is `move` strategy, but for some custom approaches `copy` are available.
 * **Conflict**: Determines how to handle conflicts when files with the same name exist in the destination. Possible values are: `overwrite`, `keepboth`, `skip`, `fail`.
 
-### Contributing 
+## Contributing 
 
 Contributions are always welcome! Feel free to open pull requests or issues for bug reports, feature requests, or improvements.
 
-### License
+## License
 
 This project is licensed under the ISC License. See the LICENSE file for details.
