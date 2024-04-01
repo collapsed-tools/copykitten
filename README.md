@@ -1,8 +1,10 @@
 **@collapsed-tools/copykitten**
 
-Easy image and video file management for moving files from cameras to centralized storage.
+> Easy image and video file management for moving files from cameras to centralized storage.
 
-**Features**
+** ATTENTION: SOFTWARE IS IN PRE-ALPHA STATE, NOT YET READY TO USE **
+
+# Features
 
 * **Reliable Transfers:**  Moves or copies files between camera storage (e.g., SD cards) and your designated storage locations.
 * **Flexible Conflict Resolution:** Handles file conflicts with various strategies:
@@ -10,58 +12,58 @@ Easy image and video file management for moving files from cameras to centralize
     * **Keep Both:** Retains existing files and saves new versions with a ".new" suffix, preventing data loss.
     * **Skip:** Keeps the original file and skips the transfer.
 * **Progress Tracking:** Provides updates on the transfer process.
+
+## TODO
+
 * **TODO: Handles Camera Disconnects:** Transfers continue seamlessly if the camera is disconnected and reconnected.
 * **TODO: Media subfolder whitelist:** Automatically detect media-related subfolders, like 'DCIM', 'CLIP', 'CameraNN', etc.
 
-**Installation**
+# Installation
 
 ```bash
 npm install @collapsed-tools/copykitten
 ```
+# Usage
 
-**Usage**
+As simple as:
 
-Here's a basic example with the command-line interface (yep, for now you need to add `--` after `npm run cli` to pass parameters down to script, will be fixed):
-
+#### CLI
 ```bash
-npm run cli -- \
-   --source /path/to/camera \
-   --destination /path/to/storage \
-   --transfer-strategy (optional) move | copy \
-   --conflict-strategy (optional) overwrite | keepboth | skip | fail 
+cli transfer -s /path/to/camera -d /path/to/storage \
 ```
 
-**Explanation of Options**
-
-* `--source`: The path to the source folder containing the files you want to transfer.
-* `--destination`: The path to the folder where you want to transfer the files.
-* `--transfer-strategy`: Default is `move` strategy, but for some custom approaches `copy` are aviable.
-* `--conflict-strategy`: Determines how to handle conflicts when files with the same name exist in the destination. Possible values are: `overwrite`, `keepboth`, `skip`, `fail`.
-
-**Integrating into Your Workflow**
-
-You can easily incorporate `copykitten` into your scripts or larger applications. Here's an example of how to use it within your Node.js code:
-
+#### Javascript
 ```javascript
 import { transferer } from '@collapsed-tools/copykitten';
-const sourcePath = '/path/to/images';
-const destinationPath = '/path/to/storage';
-
-await transferer.transferFiles(sourcePath, destinationPath);
+await transferer.transferFiles('/path/to/images', '/path/to/storage');
 ```
 
+With parameters:
+
+#### CLI
+```bash
+cli transfer \
+   --source /path/to/camera \
+   --destination /path/to/storage \
+   --transfer-strategy copy \
+   --conflict-strategy keepboth 
+```
+
+#### Javascript
 ```javascript
 import { transferer, TransferStrategyEnum, ConflictResoleStrategyEnum } from '@collapsed-tools/copykitten';
-const sourcePath = '/path/to/images';
-const destinationPath = '/path/to/storage';
-
 await transferer.transferFiles( 
-  sourcePath, 
-  destinationPath, 
+  '/path/to/camera', 
+  '/path/to/storage', 
   TransferStrategyEnum.COPY,
   ConflictResoleStrategyEnum.KEEPBOTH 
 );
 ```
+
+**Explanation of strategies**
+
+* **Transfer**: Default is `move` strategy, but for some custom approaches `copy` are available.
+* **Conflict**: Determines how to handle conflicts when files with the same name exist in the destination. Possible values are: `overwrite`, `keepboth`, `skip`, `fail`.
 
 **Contributing** 
 
