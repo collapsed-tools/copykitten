@@ -1,11 +1,20 @@
 import fsp from 'fs/promises';
 import path from 'path';
 import { printPriorStats, printProgressStats, printFinalStats } from './print.js'
+import EventEmitter from 'events';
+
+class FileMetadata {
+  constructor(mtime, size) {
+    this.mtime = new Date(mtime);
+    this.size = size;
+  }
+}
 
 class File {
-  constructor(originalRelativePath, newRelativePath = null) {
-    this.newRelativePath = newRelativePath || originalRelativePath;
+  constructor(originalRelativePath, metadata, newRelativePath = null) {
     this.originalRelativePath = originalRelativePath;
+    this.metadata = metadata;
+    this.newRelativePath = newRelativePath || originalRelativePath;
   }
 }
 
@@ -20,22 +29,42 @@ export class ConflictResoleStrategyEnum {
   static SKIP = 'skip'; // Keep origial file, skip moving/copying (default option for copy strategy) 
   static OVERWRITE = 'overwrite'; // Overwrite safely (copy/move with adding '.tmp' before extention, then after success, delete original, and finally rename new file to original name, removing '.tmp' before extention)
 }
-export class TransferStat {
-  fileNumber = 0;
-  filesNumber = 0;
-  reset(filesNumber) {
-    this.filesNumber = filesNumber;
+
+export class TransferProgressStat {
+  current = {
+    fileNumber: 0,
+    byte: 0,
+  }
+  total = {
+    fileNumber: 0,
+    byte: 0,
+  }
+  ee = new EventEmitter();
+  reset(totalFileNumber, totalByte) {
+    this.total.fileNumber = totalFileNumber;
+    this.total.byte = totalByte;
+    this.current.fileNumber = 0;
+    this.current.byte = 0;
+    this.current.fileName = null;
+    this.ee.emit('reset');
+  }
+
+  update(fileName, bytes) {
+    this.current.fileNumber++;
+    this.current.byte += bytes;
+    this.current.fileName = fileName;
+    this.ee.emit('update');
+  }
+  end() {
+    this.current.fileName = null;
+    this.ee.emit('end');
   }
 }
+
 export class Transferer {
   static shared = new Transferer();
-  stat = new TransferStat();
-  resetStat(filesNumber) {
-    this.stat.reset(filesNumber);
-  }
-  updateStat() {
-    this.stat.fileNumber++;
-  }
+  progressStat = new TransferProgressStat();
+
   async getFiles(folderPath, baseFolderPath = null) {
     baseFolderPath = baseFolderPath || folderPath;
     var files = [];
@@ -44,8 +73,10 @@ export class Transferer {
     for (const entry of dirEntries) {
       const entryPath = path.join(folderPath, entry.name);
       if (entry.isFile()) {
+        const fileStat = await fsp.stat(entryPath);
         const relativePath = path.relative(baseFolderPath, entryPath);
-        const file = new File(relativePath);
+        const fileMetadata = new FileMetadata(fileStat.mtime, fileStat.size);
+        const file = new File(relativePath, fileMetadata);
         files.push(file);
       } else if (entry.isDirectory()) {
         const subFolderFiles = await this.getFiles(entryPath, baseFolderPath);
@@ -116,7 +147,7 @@ export class Transferer {
         case ConflictResoleStrategyEnum.KEEPBOTH:
           const { dir, name, ext } = path.parse(conflictFile.originalRelativePath);
           const newRelativePath = path.format({ dir, name: name + '.new', ext });
-          conflictFile.newRelativePath = newRelativePath; 
+          conflictFile.newRelativePath = newRelativePath;
           resolvedFiles.push(conflictFile);
           break;
         case ConflictResoleStrategyEnum.SKIP:
@@ -137,20 +168,27 @@ export class Transferer {
     const { untransferredFiles: wasUntransferredFiles, transferredFiles: wasTransferredFiles, conflictFiles: wasConflictFiles } = this.getFilesToTransfer(cardFiles, storageFiles);
     const resolvedConflictFiles = this.reslolveConflictFiles(wasConflictFiles, conflictResoleStrategy);
     const nowTransferringFiles = wasUntransferredFiles.concat(resolvedConflictFiles);
-    printPriorStats(wasUntransferredFiles, wasTransferredFiles, wasConflictFiles, resolvedConflictFiles, nowTransferringFiles, transferStrategy, conflictResoleStrategy);
+    //printPriorStats(wasUntransferredFiles, wasTransferredFiles, wasConflictFiles, resolvedConflictFiles, nowTransferringFiles, transferStrategy, conflictResoleStrategy);
     return nowTransferringFiles;
   }
 
   async transferFiles(cardFolderPath, storageFolderPath, transferStrategy = TransferStrategyEnum.MOVE, conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE) {
     const nowTransferringFiles = await this.getFilesToTransferWithoutConflict(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy);
-    this.resetStat(nowTransferringFiles.length);
+
+    const totalFiles = nowTransferringFiles.length;
+    const totalBytes = nowTransferringFiles.reduce((bytes, nowTransferringFile) => {
+      return bytes + nowTransferringFile.metadata.size;
+    }, 0);
+
+    this.progressStat.reset(totalFiles, totalBytes);
     const nowTransferredFiles = [];
     for (const nowTransferringFile of nowTransferringFiles) {
       await this.transferFile(nowTransferringFile, cardFolderPath, storageFolderPath, transferStrategy);
       nowTransferredFiles.push(nowTransferringFile);
-      printProgressStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
-      this.updateStat();
+      //printProgressStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
+      this.progressStat.update(nowTransferringFile.newRelativePath, nowTransferringFile.metadata.size);
     }
-    printFinalStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
+    //printFinalStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
+    this.progressStat.end();
   }
 }
