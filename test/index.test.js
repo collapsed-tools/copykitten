@@ -80,7 +80,8 @@ describe('transferFiles integrational', () => {
     ];
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = null;
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Basic - Copy files to empty storage', async () => {
@@ -94,7 +95,8 @@ describe('transferFiles integrational', () => {
     const referenceStorageMockFilesAfterTransfer = referenceCardMockFilesBeforeTransfer;
     const transferStrategy = TransferStrategyEnum.COPY;
     const conflictResoleStrategy = null;
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Conflict Resolution - OVERWRITE', async () => {
@@ -112,7 +114,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE;
 
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Conflict Resolution - KEEPBOTH', async () => {
@@ -132,7 +135,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = ConflictResoleStrategyEnum.KEEPBOTH;
 
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Conflict Resolution - SKIP', async () => {
@@ -149,7 +153,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = ConflictResoleStrategyEnum.SKIP;
 
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Complex Scenario - Merging', async () => {
@@ -178,7 +183,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = ConflictResoleStrategyEnum.KEEPBOTH;
 
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
 
@@ -197,7 +203,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.MOVE;
     const conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE;
 
-    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer);
+    const isBigFileMode = true;
+    await performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode);
   });
 
   test('Fail - Non-existent Source Folder', async () => {
@@ -210,7 +217,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.COPY; // Or MOVE
     const conflictResoleStrategy = null;
 
-    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, nonExistentCardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer)).rejects.toThrow(/ENOENT: no such file or directory/);  // Check for the specific error type
+    const isBigFileMode = true;
+    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, nonExistentCardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode)).rejects.toThrow(/ENOENT: no such file or directory/);  // Check for the specific error type
   });
   test('Fail - Non-existent Destination Folder', async () => {
     const nonExistentStorageFolderPath = path.join(storageFolderPath, 'missing_folder');
@@ -226,7 +234,8 @@ describe('transferFiles integrational', () => {
     const conflictResoleStrategy = null;
 
     // Expect an error (likely similar to the 'Non-existent Source Folder' case)  
-    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, nonExistentStorageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer)).rejects.toThrow();
+    const isBigFileMode = true;
+    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, nonExistentStorageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode)).rejects.toThrow();
   });
 
   test('Fail - Invalid Source Path', async () => {
@@ -241,7 +250,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.COPY; // Or MOVE
     const conflictResoleStrategy = null;
 
-    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer)).rejects.toThrow();
+    const isBigFileMode = true;
+    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode)).rejects.toThrow();
   });
 
   test('Fail - Invalid Destination Path', async () => {
@@ -256,7 +266,8 @@ describe('transferFiles integrational', () => {
     const transferStrategy = TransferStrategyEnum.COPY; // Or MOVE
     const conflictResoleStrategy = null;
 
-    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer)).rejects.toThrow();
+    const isBigFileMode = true;
+    await expect(performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode)).rejects.toThrow();
   });
 
 });
@@ -275,7 +286,8 @@ function textSort(mockFiles) {
 }
 
 
-async function performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer) {
+async function performTransferFilesTest(transferStrategy, conflictResoleStrategy, cardFolderPath, storageFolderPath, referenceCardMockFilesBeforeTransfer, referenceCardMockFilesAfterTransfer, referenceStorageMockFilesBeforeTransfer, referenceStorageMockFilesAfterTransfer, isBigFileMode) {
+  const bigFileThreshold = (isBigFileMode) ? 1 : Infinity;
   await writeMockFiles(referenceCardMockFilesBeforeTransfer, cardFolderPath);
   const readedCardMockFilesBeforeTransfer = await readMockFiles(cardFolderPath);
   expect(textSort(readedCardMockFilesBeforeTransfer)).toEqual(textSort(referenceCardMockFilesBeforeTransfer)); // self-test of helper
@@ -283,7 +295,7 @@ async function performTransferFilesTest(transferStrategy, conflictResoleStrategy
   await writeMockFiles(referenceStorageMockFilesBeforeTransfer, storageFolderPath);
   const readedStorageMockFilesBeforeTransfer = await readMockFiles(storageFolderPath);
   expect(textSort(readedStorageMockFilesBeforeTransfer)).toEqual(textSort(referenceStorageMockFilesBeforeTransfer)); // self-test of helper
-  await Transferer.shared.transferFiles(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy);
+  await Transferer.shared.transferFiles(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy, bigFileThreshold);
 
   const readedCardMockFilesAfterTransfer = await readMockFiles(cardFolderPath);
   expect(textSort(readedCardMockFilesAfterTransfer)).toEqual(textSort(referenceCardMockFilesAfterTransfer));

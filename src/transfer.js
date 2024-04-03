@@ -2,6 +2,7 @@ import fsp from 'fs/promises';
 import path from 'path';
 import { printPriorStats, printProgressStats, printFinalStats } from './print.js'
 import { TransferProgressStat } from './transferProgressStat.js';
+import { copyBigFile } from './copyBigFile.js';
 
 class FileMetadata {
   constructor(mtime, size) {
@@ -55,7 +56,7 @@ export class Transferer {
     return files;
   }
 
-  async transferFile(file, cardFolderPath, storageFolderPath, strategy) {
+  async transferFile(file, cardFolderPath, storageFolderPath, strategy, bigFileThreshold, progressCallback) {
     const originalfilePath = path.join(cardFolderPath, file.originalRelativePath);
     const newFilePath = path.join(storageFolderPath, file.newRelativePath);
 
@@ -63,7 +64,13 @@ export class Transferer {
     const tempFilePath = path.format({ dir, name: name + '.tmp', ext });
 
     await fsp.mkdir(path.dirname(tempFilePath), { recursive: true });
-    await fsp.copyFile(originalfilePath, tempFilePath);
+    const isBigFile = file.metadata.size >= bigFileThreshold;
+    if (isBigFile) {
+      await copyBigFile(originalfilePath, tempFilePath, progressCallback);
+    } else {
+      await fsp.copyFile(originalfilePath, tempFilePath);
+      progressCallback(file.metadata.size)
+    }
 
     try {
       await fsp.rename(tempFilePath, newFilePath);
@@ -141,7 +148,7 @@ export class Transferer {
     return nowTransferringFiles;
   }
 
-  async transferFiles(cardFolderPath, storageFolderPath, transferStrategy = TransferStrategyEnum.MOVE, conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE) {
+  async transferFiles(cardFolderPath, storageFolderPath, transferStrategy = TransferStrategyEnum.MOVE, conflictResoleStrategy = ConflictResoleStrategyEnum.OVERWRITE, bigFileThreshold = 1024 * 1024 * 32) {
     const nowTransferringFiles = await this.getFilesToTransferWithoutConflict(cardFolderPath, storageFolderPath, transferStrategy, conflictResoleStrategy);
 
     const totalFiles = nowTransferringFiles.length;
@@ -153,10 +160,13 @@ export class Transferer {
     this.progressStat.start();
     const nowTransferredFiles = [];
     for (const nowTransferringFile of nowTransferringFiles) {
-      await this.transferFile(nowTransferringFile, cardFolderPath, storageFolderPath, transferStrategy);
+      const progressCallback = (chunkSize) => {
+        this.progressStat.update(nowTransferringFile.newRelativePath, chunkSize);  
+      }
+      await this.transferFile(nowTransferringFile, cardFolderPath, storageFolderPath, transferStrategy, bigFileThreshold, progressCallback);
       nowTransferredFiles.push(nowTransferringFile);
       //printProgressStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
-      this.progressStat.update(nowTransferringFile.newRelativePath, nowTransferringFile.metadata.size);
+      //progressCallback(nowTransferringFile.metadata.size); // aka this.progressStat.update(nowTransferringFile.newRelativePath, nowTransferringFile.metadata.size);
     }
     //printFinalStats(nowTransferringFiles, nowTransferredFiles, transferStrategy, conflictResoleStrategy);
     this.progressStat.end();
