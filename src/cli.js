@@ -15,12 +15,11 @@ async function runTransferAction(options) {
     let bar;
     
     transferer.progressStat.ee.on('reset', () => {
-      bar = new ProgressBar('[:bar] :yoyo :rate bps :current/:total :etas', { total: transferer.progressStat.total.byte, width: 15, complete:'█', incomplete:'·' });
+      //bar = new ProgressBar('[:bar] | file: :fileName | brs: :brs bps | rate :rate bps | ct :current/:total | etas :etas', { total: transferer.progressStat.total.byte, width: 5, complete:'█', incomplete:'·' });
+      bar = new ProgressBar('[:bar] | mbrs: :mbrs mbps | rate :rate bps | ct :current/:total | etas :etas', { total: transferer.progressStat.total.byte, width: 5, complete:'█', incomplete:'·' });
     });
 
-    transferer.progressStat.ee.on('update', () => {
-      bar.update(transferer.progressStat.current.byte / transferer.progressStat.total.byte, {'yoyo': transferer.progressStat.current.fileName });
-    });
+    transferer.progressStat.ee.on('update', () => onUpdate(bar));
 
     await transferer.transferFiles(
       options.source,
@@ -35,6 +34,14 @@ async function runTransferAction(options) {
   }
 }
 
+function onUpdate(bar) {
+  {
+    const brs = transferer.progressStat.byteRate.overall;
+    const mbrs = brs / 1024 / 1024;
+    const mbrsText = mbrs.toFixed(0);
+    bar.update(transferer.progressStat.current.byte / transferer.progressStat.total.byte, {'fileName': transferer.progressStat.current.fileName, 'mbrs': mbrsText});
+  }
+}
 program
   .version('0.0.0')
   .command('transfer')
