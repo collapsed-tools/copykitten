@@ -21,7 +21,7 @@
       "<rootDir>/test"
     ],
     "transform": {},
-    "testEnvironment": "jest-environment-node"
+    "testEnvironment": "node"
   },
   "dependencies": {
     "commander": "^12.0.0",
